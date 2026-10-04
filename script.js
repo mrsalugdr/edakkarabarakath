@@ -1,135 +1,118 @@
-const SHEET_NAME = "Customers";
+const API_URL =
+  "https://script.google.com/macros/s/AKfycbzHSlcGVg7EUUJdKf6PoPA0UhJCgbnd78lgy7bYRdGAzYplX7Pj8v8-fA2l4JFWxyGQ/exec";
 
-function doGet() {
-  return ContentService
-    .createTextOutput(JSON.stringify({
-      success: true,
-      message: "Edakkara Barakath API is working"
-    }))
-    .setMimeType(ContentService.MimeType.JSON);
-}
+const recordsContainer = document.getElementById("customerRecords");
 
-function doPost(e) {
+async function loadCustomers() {
+  recordsContainer.innerHTML = "Loading customers...";
+
   try {
-    const data = JSON.parse(e.postData.contents);
-    const sheet =
-      SpreadsheetApp
-        .getActiveSpreadsheet()
-        .getSheetByName(SHEET_NAME);
-
-    if (!sheet) {
-      throw new Error("Customers sheet not found");
-    }
-
-    // LOAD CUSTOMERS
-    if (data.action === "getCustomers") {
-      const lastRow = sheet.getLastRow();
-
-      if (lastRow < 2) {
-        return jsonResponse({
-          success: true,
-          customers: []
-        });
-      }
-
-      const values =
-        sheet
-          .getRange(2, 1, lastRow - 1, 15)
-          .getValues();
-
-      const customers = values
-        .filter(row => row[0])
-        .map(row => ({
-          referenceId: row[0],
-          customerName: row[1],
-          phone: row[2],
-          place: row[3],
-          receivedDate: row[4],
-          deliveryDate: row[5],
-          itemType: row[6],
-          quantity: row[7],
-          measurements: row[8],
-          specialNotes: row[9],
-          stitchingStatus: row[10],
-          totalAmount: row[11],
-          advance: row[12],
-          balance: row[13],
-          whatsappStatus: row[14]
-        }));
-
-      return jsonResponse({
-        success: true,
-        customers: customers
-      });
-    }
-
-    // FIND NEXT EMPTY ROW
-    const referenceValues =
-      sheet.getRange("A2:A").getValues();
-
-    let rowNumber = 2;
-
-    for (let i = 0; i < referenceValues.length; i++) {
-      if (!referenceValues[i][0]) {
-        rowNumber = i + 2;
-        break;
-      }
-    }
-
-    // REFERENCE STARTS FROM EB-0300
-    const referenceId =
-      "EB-" +
-      String(rowNumber + 298).padStart(4, "0");
-
-    // AMOUNT CALCULATION
-    const totalAmount =
-      Number(data.totalAmount || 0);
-
-    const advance =
-      Number(data.advance || 0);
-
-    const balance =
-      totalAmount - advance;
-
-    // SAVE CUSTOMER
-    sheet
-      .getRange(rowNumber, 1, 1, 15)
-      .setValues([[
-        referenceId,
-        data.customerName || "",
-        data.phone || "",
-        data.place || "",
-        data.receivedDate || "",
-        data.deliveryDate || "",
-        data.itemType || "",
-        data.quantity || "",
-        data.measurements || "",
-        data.specialNotes || "",
-        data.stitchingStatus || "Received",
-        totalAmount,
-        advance,
-        balance,
-        "Not Sent"
-      ]]);
-
-    return jsonResponse({
-      success: true,
-      referenceId: referenceId,
-      message: "Customer saved successfully"
+    const response = await fetch(API_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "text/plain;charset=utf-8"
+      },
+      body: JSON.stringify({
+        action: "getCustomers"
+      })
     });
+
+    const result = await response.json();
+
+    if (!result.success) {
+      throw new Error(result.error || "Failed to load customers");
+    }
+
+    displayCustomers(result.customers || []);
 
   } catch (error) {
+    console.error(error);
 
-    return jsonResponse({
-      success: false,
-      error: error.message
-    });
-
+    recordsContainer.innerHTML = `
+      <div class="error">
+        Customer records load ചെയ്യാൻ കഴിഞ്ഞില്ല.
+        <br>
+        ${error.message}
+      </div>
+    `;
   }
 }
 
-function jsonResponse(data) {
-  return ContentService
-    .createTextOutput(JSON.stringify(data))
-    .setMimeType(ContentService.MimeType.JSON);
+function displayCustomers(customers) {
+
+  if (!customers.length) {
+    recordsContainer.innerHTML = `
+      <div class="empty">
+        No customer records found.
+      </div>
+    `;
+    return;
+  }
+
+  recordsContainer.innerHTML = customers.map(customer => {
+
+    const phone = String(customer.phone || "")
+      .replace(/\D/g, "");
+
+    const whatsappMessage = encodeURIComponent(
+      `Hello ${customer.customerName || ""},
+
+Your stitching order ${customer.referenceId || ""} is ready.
+
+Thank you,
+EDAkkara Barakath`
+    );
+
+    const whatsappUrl =
+      `https://wa.me/${phone}?text=${whatsappMessage}`;
+
+    return `
+      <div class="customer-card">
+
+        <div class="customer-header">
+          <strong>${escapeHtml(customer.referenceId)}</strong>
+          <span>${escapeHtml(customer.stitchingStatus || "")}</span>
+        </div>
+
+        <h3>${escapeHtml(customer.customerName || "")}</h3>
+
+        <p>
+          📞 ${escapeHtml(customer.phone || "")}
+        </p>
+
+        <p>
+          📍 ${escapeHtml(customer.place || "")}
+        </p>
+
+        <p>
+          👗 ${escapeHtml(customer.itemType || "")}
+        </p>
+
+        <p>
+          📅 ${escapeHtml(customer.receivedDate || "")}
+        </p>
+
+        <a
+          class="whatsapp-button"
+          href="${whatsappUrl}"
+          target="_blank"
+        >
+          WhatsApp
+        </a>
+
+      </div>
+    `;
+
+  }).join("");
 }
+
+function escapeHtml(value) {
+  return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+loadCustomers();
