@@ -1,234 +1,117 @@
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
+/* ===============================
+   CUSTOMER RECORDS TABLE
+================================ */
 
-body {
-  font-family: Arial, sans-serif;
-  background: #f5f6f8;
-  color: #222;
-}
-
-.topbar {
-  background: #111;
-  color: white;
-  padding: 20px;
-}
-
-.topbar h1 {
-  max-width: 1100px;
-  margin: auto;
-  font-size: 24px;
-}
-
-.topbar p {
-  max-width: 1100px;
-  margin: 5px auto 0;
-  color: #bbb;
-}
-
-.container {
-  max-width: 1100px;
-  margin: auto;
-  padding: 25px 15px;
-}
-
-.heading,
-.recordsHead {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 15px;
-  margin-bottom: 20px;
-}
-
-.heading h2 {
-  margin-bottom: 5px;
-}
-
-.heading p,
-.recordsHead p {
-  color: #777;
-}
-
-button {
-  cursor: pointer;
-}
-
-#refreshBtn {
-  padding: 10px 16px;
-  background: white;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-}
-
-.card {
-  background: white;
-  padding: 25px;
-  border-radius: 12px;
-  margin-bottom: 22px;
-  box-shadow: 0 3px 15px rgba(0,0,0,.05);
-}
-
-.card h2 {
-  margin-bottom: 20px;
-}
-
-.grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 18px;
-}
-
-.grid > div {
-  display: flex;
-  flex-direction: column;
-}
-
-.grid .full {
-  grid-column: 1 / -1;
-}
-
-label {
-  font-size: 14px;
-  font-weight: bold;
-  margin-bottom: 7px;
-}
-
-input,
-select,
-textarea {
-  padding: 12px;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  font-size: 15px;
-}
-
-textarea {
-  min-height: 90px;
-  resize: vertical;
-}
-
-.save {
+.records-table-wrapper {
   width: 100%;
-  margin-top: 22px;
-  padding: 14px;
-  background: #111;
-  color: white;
-  border: 0;
-  border-radius: 8px;
-  font-weight: bold;
-  font-size: 16px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  margin-top: 20px;
 }
 
-#result {
-  margin-top: 15px;
-  padding: 12px;
-  border-radius: 8px;
-  display: none;
-}
-
-.success {
-  display: block !important;
-  background: #eaf7ee;
-  color: #176b35;
-}
-
-.error {
-  display: block !important;
-  background: #fff0f0;
-  color: #a00000;
-}
-
-#searchInput {
-  width: 320px;
-}
-
-.recordsTable {
+.records-table {
   width: 100%;
+  min-width: 1200px;
   border-collapse: collapse;
-  min-width: 800px;
+  background: #ffffff;
 }
 
-.recordsTable th,
-.recordsTable td {
-  padding: 12px;
-  border-bottom: 1px solid #eee;
+.records-table th {
+  padding: 14px 12px;
   text-align: left;
+  white-space: nowrap;
+  background: #f5f5f5;
+  border-bottom: 2px solid #ddd;
+  font-size: 14px;
+  font-weight: 600;
 }
 
-.recordsTable th {
-  background: #f7f7f7;
+.records-table td {
+  padding: 13px 12px;
+  white-space: nowrap;
+  border-bottom: 1px solid #e5e5e5;
+  font-size: 14px;
+}
+
+.records-table tbody tr:hover {
+  background: #fafafa;
+}
+
+.records-table .ref {
+  font-weight: 700;
+}
+
+.records-table .center {
+  text-align: center;
+}
+
+.records-table .amount {
+  font-weight: 600;
 }
 
 .status {
-  padding: 5px 9px;
+  display: inline-block;
+  padding: 5px 10px;
   border-radius: 20px;
   font-size: 12px;
-  font-weight: bold;
+  font-weight: 600;
 }
 
-.received {
-  background: #eee;
+.status.in-progress {
+  background: #fff3cd;
+  color: #856404;
 }
 
-.progress {
-  background: #fff0c7;
+.status.received {
+  background: #e2e3e5;
+  color: #383d41;
 }
 
-.ready {
-  background: #dff5e6;
+.status.ready {
+  background: #d4edda;
+  color: #155724;
 }
 
-.delivered {
-  background: #dfeaff;
+.status.delivered {
+  background: #cce5ff;
+  color: #004085;
 }
 
-.whatsapp {
+.whatsapp-btn {
+  display: inline-block;
+  padding: 7px 13px;
+  border-radius: 6px;
   background: #25d366;
   color: white;
-  border: 0;
-  padding: 8px 12px;
-  border-radius: 7px;
-  font-weight: bold;
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
 }
 
-.due {
-  color: #c0392b;
-  font-weight: bold;
+.whatsapp-btn:hover {
+  opacity: 0.9;
 }
 
-.paid {
-  color: #16813b;
-  font-weight: bold;
+.loading,
+.empty,
+.error {
+  padding: 30px;
+  text-align: center;
 }
 
-.tableWrap {
-  overflow-x: auto;
-}
 
-@media (max-width: 700px) {
+/* MOBILE */
+@media (max-width: 768px) {
 
-  .grid {
-    grid-template-columns: 1fr;
+  .records-table {
+    min-width: 1200px;
   }
 
-  .grid .full {
-    grid-column: auto;
+  .records-table th,
+  .records-table td {
+    padding: 10px;
+    font-size: 13px;
   }
 
-  .heading,
-  .recordsHead {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  #searchInput {
-    width: 100%;
-  }
-
-  .card {
-    padding: 18px;
-  }
 }
