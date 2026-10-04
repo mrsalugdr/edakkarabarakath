@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Edakkara Barakath</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<header class="topbar">
+  <h1>EDAKKARA BARAKATH</h1>
+  <p>Tailoring & Customer Management</p>
+</header>
+
+<main class="container">
+
+  <section class="heading">
+    <div>
+      <h2>Customer Management</h2>
+      <p>Manage stitching orders and customer records.</p>
+    </div>
+    <button id="refreshBtn">↻ Refresh</button>
+  </section>
+
+  <section class="card">
+    <h2>New Customer</h2>
+
+    <form id="customerForm">
+
+      <div class="grid">
+
+        <div>
+          <label>Customer Name *</label>
+          <input id="customerName" required>
+        </div>
+
+        <div>
+          <label>WhatsApp / Phone *</label>
+          <input id="phone" type="tel" required>
+        </div>
+
+        <div>
+          <label>Place</label>
+          <input id="place">
+        </div>
+
+        <div>
+          <label>Received Date *</label>
+          <input id="receivedDate" type="date" required>
+        </div>
+
+        <div>
+          <label>Delivery Date</label>
+          <input id="deliveryDate" type="date">
+        </div>
+
+        <div>
+          <label>Dress / Item</label>
+          <input id="itemType" placeholder="Eg: Blouse">
+        </div>
+
+        <div>
+          <label>Quantity</label>
+          <input id="quantity" type="number" min="1" value="1">
+        </div>
+
+        <div>
+          <label>Stitching Status</label>
+          <select id="stitchingStatus">
+            <option>Received</option>
+            <option>In Progress</option>
+            <option>Ready</option>
+            <option>Delivered</option>
+          </select>
+        </div>
+
+        <div class="full">
+          <label>Measurements</label>
+          <textarea id="measurements"></textarea>
+        </div>
+
+        <div class="full">
+          <label>Special Notes</label>
+          <textarea id="specialNotes"></textarea>
+        </div>
+
+        <div>
+          <label>Total Amount</label>
+          <input id="totalAmount" type="number" min="0">
+        </div>
+
+        <div>
+          <label>Advance</label>
+          <input id="advance" type="number" min="0">
+        </div>
+
+      </div>
+
+      <button class="save" type="submit">Save Customer</button>
+
+    </form>
+
+    <div id="result"></div>
+  </section>
+
+
+  <section class="card">
+
+    <div class="recordsHead">
+      <div>
+        <h2>Customer Records</h2>
+        <p id="customerCount">Loading...</p>
+      </div>
+
+      <input
+        id="searchInput"
+        type="search"
+        placeholder="Search customer..."
+      >
+    </div>
+
+    <div id="recordsContainer">
+      Loading customers...
+    </div>
+
+  </section>
+
+</main>
+
+<script src="script.js"></script>
+
+</body>
+</html>
