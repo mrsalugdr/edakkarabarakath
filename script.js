@@ -1,533 +1,135 @@
-const API_URL =
-  "https://script.google.com/macros/s/AKfycbzHSlcGVg7EUUJdKf6PoPA0UhJCgbnd78lgy7bYRdGAzYplX7Pj8v8-fA2l4JFWxyGQ/exec";
-
-let customers = [];
-
-const form = document.getElementById("customerForm");
-const result = document.getElementById("result");
-const recordsContainer = document.getElementById("recordsContainer");
-const customerCount = document.getElementById("customerCount");
-const searchInput = document.getElementById("searchInput");
-
-
-document.addEventListener("DOMContentLoaded", function () {
-
-  document.getElementById("receivedDate").value =
-    new Date().toISOString().split("T")[0];
-
-  loadCustomers();
-
-});
-
-
-form.addEventListener("submit", async function (event) {
-
-  event.preventDefault();
-
-  result.className = "";
-  result.style.display = "block";
-  result.textContent = "Saving customer...";
-
-  const customer = {
-
-    customerName:
-      document.getElementById("customerName").value.trim(),
-
-    phone:
-      document.getElementById("phone").value.trim(),
-
-    place:
-      document.getElementById("place").value.trim(),
-
-    receivedDate:
-      document.getElementById("receivedDate").value,
-
-    deliveryDate:
-      document.getElementById("deliveryDate").value,
-
-    itemType:
-      document.getElementById("itemType").value.trim(),
-
-    quantity:
-      document.getElementById("quantity").value,
-
-    measurements:
-      document.getElementById("measurements").value.trim(),
-
-    specialNotes:
-      document.getElementById("specialNotes").value.trim(),
-
-    stitchingStatus:
-      document.getElementById("stitchingStatus").value,
-
-    totalAmount:
-      document.getElementById("totalAmount").value,
-
-    advance:
-      document.getElementById("advance").value
-
-  };
-
-
-  try {
-
-    const response = await fetch(API_URL, {
-
-      method: "POST",
-
-      headers: {
-        "Content-Type": "text/plain;charset=utf-8"
-      },
-
-      body: JSON.stringify(customer)
-
-    });
-
-
-    const text = await response.text();
-
-    console.log(text);
-
-    const data = JSON.parse(text);
-
-
-    if (!data.success) {
-
-      throw new Error(
-        data.error || "Unable to save customer"
-      );
-
-    }
-
-
-    result.className = "success";
-
-    result.textContent =
-      "Customer saved successfully! Reference ID: " +
-      data.referenceId;
-
-
-    form.reset();
-
-
-    document.getElementById("receivedDate").value =
-      new Date().toISOString().split("T")[0];
-
-    document.getElementById("quantity").value = "1";
-
-
-    loadCustomers();
-
-
-  } catch (error) {
-
-    console.error(error);
-
-    result.className = "error";
-
-    result.textContent =
-      "Error: " + error.message;
-
-  }
-
-});
-
-
-async function loadCustomers() {
-
-  recordsContainer.innerHTML =
-    "Loading customers...";
-
-
-  try {
-
-    const response = await fetch(API_URL, {
-
-      method: "POST",
-
-      headers: {
-        "Content-Type": "text/plain;charset=utf-8"
-      },
-
-      body: JSON.stringify({
-        action: "getCustomers"
-      })
-
-    });
-
-
-    const text = await response.text();
-
-    console.log(text);
-
-    const data = JSON.parse(text);
-
-
-    if (!data.success) {
-
-      throw new Error(
-        data.error || "Unable to load customers"
-      );
-
-    }
-
-
-    customers =
-      data.customers || [];
-
-
-    displayCustomers(customers);
-
-
-  } catch (error) {
-
-    console.error(error);
-
-    recordsContainer.innerHTML =
-      "Unable to load customer records.";
-
-  }
-
+const SHEET_NAME = "Customers";
+
+function doGet() {
+  return ContentService
+    .createTextOutput(JSON.stringify({
+      success: true,
+      message: "Edakkara Barakath API is working"
+    }))
+    .setMimeType(ContentService.MimeType.JSON);
 }
 
+function doPost(e) {
+  try {
+    const data = JSON.parse(e.postData.contents);
+    const sheet =
+      SpreadsheetApp
+        .getActiveSpreadsheet()
+        .getSheetByName(SHEET_NAME);
 
-function displayCustomers(list) {
+    if (!sheet) {
+      throw new Error("Customers sheet not found");
+    }
 
-  customerCount.textContent =
-    list.length + " customer(s)";
+    // LOAD CUSTOMERS
+    if (data.action === "getCustomers") {
+      const lastRow = sheet.getLastRow();
 
+      if (lastRow < 2) {
+        return jsonResponse({
+          success: true,
+          customers: []
+        });
+      }
 
-  if (list.length === 0) {
+      const values =
+        sheet
+          .getRange(2, 1, lastRow - 1, 15)
+          .getValues();
 
-    recordsContainer.innerHTML =
-      "No customer records found.";
+      const customers = values
+        .filter(row => row[0])
+        .map(row => ({
+          referenceId: row[0],
+          customerName: row[1],
+          phone: row[2],
+          place: row[3],
+          receivedDate: row[4],
+          deliveryDate: row[5],
+          itemType: row[6],
+          quantity: row[7],
+          measurements: row[8],
+          specialNotes: row[9],
+          stitchingStatus: row[10],
+          totalAmount: row[11],
+          advance: row[12],
+          balance: row[13],
+          whatsappStatus: row[14]
+        }));
 
-    return;
+      return jsonResponse({
+        success: true,
+        customers: customers
+      });
+    }
 
-  }
+    // FIND NEXT EMPTY ROW
+    const referenceValues =
+      sheet.getRange("A2:A").getValues();
 
+    let rowNumber = 2;
 
-  let html = "";
+    for (let i = 0; i < referenceValues.length; i++) {
+      if (!referenceValues[i][0]) {
+        rowNumber = i + 2;
+        break;
+      }
+    }
 
-  html += '<div class="tableWrap">';
+    // REFERENCE STARTS FROM EB-0300
+    const referenceId =
+      "EB-" +
+      String(rowNumber + 298).padStart(4, "0");
 
-  html += '<table class="recordsTable">';
+    // AMOUNT CALCULATION
+    const totalAmount =
+      Number(data.totalAmount || 0);
 
-  html += "<thead>";
-
-  html += "<tr>";
-
-  html += "<th>Reference</th>";
-  html += "<th>Customer</th>";
-  html += "<th>Phone</th>";
-  html += "<th>Item</th>";
-  html += "<th>Status</th>";
-  html += "<th>Balance</th>";
-  html += "<th>WhatsApp</th>";
-
-  html += "</tr>";
-
-  html += "</thead>";
-
-  html += "<tbody>";
-
-
-  list.forEach(function (customer) {
+    const advance =
+      Number(data.advance || 0);
 
     const balance =
-      Number(customer.balance || 0);
-
-
-    let statusClass =
-      "received";
-
-
-    if (customer.stitchingStatus === "In Progress") {
-      statusClass = "progress";
-    }
-
-    if (customer.stitchingStatus === "Ready") {
-      statusClass = "ready";
-    }
-
-    if (customer.stitchingStatus === "Delivered") {
-      statusClass = "delivered";
-    }
-
-
-    const phone =
-      cleanPhone(customer.phone);
-
-
-    html += "<tr>";
-
-
-    html += "<td>";
-
-    html += "<strong>";
-
-    html += escapeHtml(
-      customer.referenceId
-    );
-
-    html += "</strong>";
-
-    html += "</td>";
-
-
-    html += "<td>";
-
-    html += escapeHtml(
-      customer.customerName
-    );
-
-    html += "<br>";
-
-    html += "<small>";
-
-    html += escapeHtml(
-      customer.place || ""
-    );
-
-    html += "</small>";
-
-    html += "</td>";
-
-
-    html += "<td>";
-
-    html += escapeHtml(
-      customer.phone || ""
-    );
-
-    html += "</td>";
-
-
-    html += "<td>";
-
-    html += escapeHtml(
-      customer.itemType || "-"
-    );
-
-    html += "</td>";
-
-
-    html += "<td>";
-
-    html += '<span class="status ' +
-      statusClass +
-      '">';
-
-    html += escapeHtml(
-      customer.stitchingStatus || "Received"
-    );
-
-    html += "</span>";
-
-    html += "</td>";
-
-
-    html += "<td>";
-
-    html += '<span class="' +
-      (balance <= 0 ? "paid" : "due") +
-      '">';
-
-    html += "₹" +
-      balance.toLocaleString("en-IN");
-
-    html += "</span>";
-
-    html += "</td>";
-
-
-    html += "<td>";
-
-    html += '<button class="whatsapp" ';
-
-    html += 'data-phone="' +
-      phone +
-      '" ';
-
-    html += 'data-name="' +
-      escapeHtml(customer.customerName || "") +
-      '" ';
-
-    html += 'data-ref="' +
-      escapeHtml(customer.referenceId || "") +
-      '">';
-
-    html += "WhatsApp";
-
-    html += "</button>";
-
-    html += "</td>";
-
-
-    html += "</tr>";
-
-  });
-
-
-  html += "</tbody>";
-
-  html += "</table>";
-
-  html += "</div>";
-
-
-  recordsContainer.innerHTML =
-    html;
-
-
-  document
-    .querySelectorAll(".whatsapp")
-    .forEach(function (button) {
-
-      button.addEventListener(
-        "click",
-        function () {
-
-          const phone =
-            button.getAttribute("data-phone");
-
-          const name =
-            button.getAttribute("data-name");
-
-          const reference =
-            button.getAttribute("data-ref");
-
-
-          const message =
-            "Hello " +
-            name +
-            ", this is Edakkara Barakath regarding your stitching order " +
-            reference +
-            ".";
-
-
-          const url =
-            "https://wa.me/" +
-            phone +
-            "?text=" +
-            encodeURIComponent(message);
-
-
-          window.open(
-            url,
-            "_blank"
-          );
-
-        }
-      );
-
+      totalAmount - advance;
+
+    // SAVE CUSTOMER
+    sheet
+      .getRange(rowNumber, 1, 1, 15)
+      .setValues([[
+        referenceId,
+        data.customerName || "",
+        data.phone || "",
+        data.place || "",
+        data.receivedDate || "",
+        data.deliveryDate || "",
+        data.itemType || "",
+        data.quantity || "",
+        data.measurements || "",
+        data.specialNotes || "",
+        data.stitchingStatus || "Received",
+        totalAmount,
+        advance,
+        balance,
+        "Not Sent"
+      ]]);
+
+    return jsonResponse({
+      success: true,
+      referenceId: referenceId,
+      message: "Customer saved successfully"
     });
 
-}
+  } catch (error) {
 
-
-searchInput.addEventListener(
-  "input",
-  function () {
-
-    const search =
-      searchInput.value
-        .toLowerCase()
-        .trim();
-
-
-    if (!search) {
-
-      displayCustomers(customers);
-
-      return;
-
-    }
-
-
-    const filtered =
-      customers.filter(function (customer) {
-
-        return (
-
-          String(customer.referenceId || "")
-            .toLowerCase()
-            .includes(search)
-
-          ||
-
-          String(customer.customerName || "")
-            .toLowerCase()
-            .includes(search)
-
-          ||
-
-          String(customer.phone || "")
-            .toLowerCase()
-            .includes(search)
-
-          ||
-
-          String(customer.place || "")
-            .toLowerCase()
-            .includes(search)
-
-          ||
-
-          String(customer.itemType || "")
-            .toLowerCase()
-            .includes(search)
-
-        );
-
-      });
-
-
-    displayCustomers(filtered);
+    return jsonResponse({
+      success: false,
+      error: error.message
+    });
 
   }
-);
-
-
-document
-  .getElementById("refreshBtn")
-  .addEventListener(
-    "click",
-    loadCustomers
-  );
-
-
-function cleanPhone(phone) {
-
-  let value =
-    String(phone || "")
-      .replace(/\D/g, "");
-
-
-  if (value.length === 10) {
-
-    value = "91" + value;
-
-  }
-
-
-  return value;
-
 }
 
-
-function escapeHtml(value) {
-
-  return String(value || "")
-
-    .replace(/&/g, "&amp;")
-
-    .replace(/</g, "&lt;")
-
-    .replace(/>/g, "&gt;")
-
-    .replace(/"/g, "&quot;")
-
-    .replace(/'/g, "&#039;");
-
+function jsonResponse(data) {
+  return ContentService
+    .createTextOutput(JSON.stringify(data))
+    .setMimeType(ContentService.MimeType.JSON);
 }
