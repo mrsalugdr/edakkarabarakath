@@ -109,14 +109,15 @@ function renderCustomers(customers) {
     }
 
     const message =
-`Hello ${customer.customerName || ""},
+`Hi ${customer.customerName || ""}
 
-Your stitching order is ready.
+*എടക്കര ബറക്കാത്തിൽ നിന്നും*
 
-Reference Code: ${customer.referenceId || ""}
+നിങ്ങളുടെ ${customer.itemType || ""} സ്റ്റിച്ച് ചെയ്തു വച്ചിട്ടുണ്ട്.
 
-Thank you,
-EDAkkara Barakath`;
+Reference ID = ${customer.referenceId || ""}
+
+Thank You 😊`;
 
     const whatsappURL =
       `https://wa.me/${whatsappPhone}?text=${encodeURIComponent(message)}`;
