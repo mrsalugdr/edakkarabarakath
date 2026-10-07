@@ -45,10 +45,12 @@ async function loadCustomers() {
 
   }
 
+
   try {
 
     const response =
       await fetch(API_URL, {
+
         method: "POST",
 
         headers: {
@@ -59,6 +61,7 @@ async function loadCustomers() {
         body: JSON.stringify({
           action: "getCustomers"
         })
+
       });
 
 
@@ -77,7 +80,9 @@ async function loadCustomers() {
 
 
     allCustomers =
-      result.customers || [];
+      Array.isArray(result.customers)
+        ? result.customers
+        : [];
 
 
     renderCustomers(
@@ -96,13 +101,21 @@ async function loadCustomers() {
     if (recordsContainer) {
 
       recordsContainer.innerHTML = `
+
         <div class="error">
+
           Failed to load customers.
+
           <br>
+
           <small>
-            ${escapeHTML(error.message)}
+            ${escapeHTML(
+              error.message
+            )}
           </small>
+
         </div>
+
       `;
 
     }
@@ -119,7 +132,9 @@ async function loadCustomers() {
    RENDER CUSTOMERS
 ========================= */
 
-function renderCustomers(customers) {
+function renderCustomers(
+  customers
+) {
 
   if (!recordsContainer) {
     return;
@@ -151,53 +166,29 @@ function renderCustomers(customers) {
 
           <tr>
 
-            <th>
-              Ref Code
-            </th>
+            <th>Ref Code</th>
 
-            <th>
-              Customer
-            </th>
+            <th>Customer</th>
 
-            <th>
-              Phone
-            </th>
+            <th>Phone</th>
 
-            <th>
-              Place
-            </th>
+            <th>Place</th>
 
-            <th>
-              Item
-            </th>
+            <th>Item</th>
 
-            <th>
-              Qty
-            </th>
+            <th>Qty</th>
 
-            <th>
-              Received
-            </th>
+            <th>Received</th>
 
-            <th>
-              Delivery
-            </th>
+            <th>Delivery</th>
 
-            <th>
-              Total
-            </th>
+            <th>Total</th>
 
-            <th>
-              Balance
-            </th>
+            <th>Balance</th>
 
-            <th>
-              Status
-            </th>
+            <th>Status</th>
 
-            <th>
-              WhatsApp
-            </th>
+            <th>WhatsApp</th>
 
           </tr>
 
@@ -221,100 +212,76 @@ function renderCustomers(customers) {
         <tr>
 
           <td>
-
             <strong class="referenceCode">
-
               ${escapeHTML(
                 customer.referenceId || ""
               )}
-
             </strong>
-
           </td>
 
 
           <td>
-
             ${escapeHTML(
               customer.customerName || ""
             )}
-
           </td>
 
 
           <td>
-
             ${escapeHTML(
               customer.phone || ""
             )}
-
           </td>
 
 
           <td>
-
             ${escapeHTML(
               customer.place || ""
             )}
-
           </td>
 
 
           <td>
-
             ${escapeHTML(
               customer.itemType || ""
             )}
-
           </td>
 
 
           <td>
-
             ${escapeHTML(
               customer.quantity || ""
             )}
-
           </td>
 
 
           <td>
-
             ${formatDate(
               customer.receivedDate
             )}
-
           </td>
 
 
           <td>
-
             ${formatDate(
               customer.deliveryDate
             )}
-
           </td>
 
 
           <td>
-
             ${formatMoney(
               customer.totalAmount
             )}
-
           </td>
 
 
           <td>
-
             <strong>
-
               ${formatMoney(
                 customer.balance
               )}
-
             </strong>
-
           </td>
 
 
@@ -323,9 +290,7 @@ function renderCustomers(customers) {
             <span
               class="status ${statusClass(status)}"
             >
-
               ${escapeHTML(status)}
-
             </span>
 
           </td>
@@ -367,16 +332,16 @@ function renderCustomers(customers) {
 
 
   /*
-    WhatsApp buttons
+    Add WhatsApp click events
   */
 
-  const whatsappButtons =
+  const buttons =
     recordsContainer.querySelectorAll(
       ".whatsappBtn"
     );
 
 
-  whatsappButtons.forEach(
+  buttons.forEach(
     button => {
 
       button.addEventListener(
@@ -451,72 +416,60 @@ if (form) {
           action:
             "saveCustomer",
 
-
           customerName:
             formData.get(
               "customerName"
             ) || "",
-
 
           phone:
             formData.get(
               "phone"
             ) || "",
 
-
           place:
             formData.get(
               "place"
             ) || "",
-
 
           receivedDate:
             formData.get(
               "receivedDate"
             ) || "",
 
-
           deliveryDate:
             formData.get(
               "deliveryDate"
             ) || "",
-
 
           itemType:
             formData.get(
               "itemType"
             ) || "",
 
-
           quantity:
             formData.get(
               "quantity"
             ) || "",
-
 
           measurements:
             formData.get(
               "measurements"
             ) || "",
 
-
           specialNotes:
             formData.get(
               "specialNotes"
             ) || "",
-
 
           stitchingStatus:
             formData.get(
               "stitchingStatus"
             ) || "Received",
 
-
           totalAmount:
             formData.get(
               "totalAmount"
             ) || 0,
-
 
           advance:
             formData.get(
@@ -588,10 +541,6 @@ if (form) {
         }
 
 
-        /*
-          Reset form
-        */
-
         form.reset();
 
 
@@ -608,10 +557,6 @@ if (form) {
 
         }
 
-
-        /*
-          Reload records
-        */
 
         await loadCustomers();
 
@@ -678,29 +623,29 @@ if (form) {
    WHATSAPP
 ========================= */
 
-function sendWhatsApp(customer) {
+function sendWhatsApp(
+  customer
+) {
 
   let phone =
     String(
       customer.phone || ""
     )
-    .replace(/\D/g, "");
+    .replace(
+      /\D/g,
+      ""
+    );
 
 
   /*
-    If Indian number is entered
-    without +91, automatically add 91.
+    Automatically add India
+    country code for 10 digit
+    Indian mobile numbers.
   */
 
   if (
     phone.length === 10 &&
-    phone.startsWith("6") ||
-    phone.length === 10 &&
-    phone.startsWith("7") ||
-    phone.length === 10 &&
-    phone.startsWith("8") ||
-    phone.length === 10 &&
-    phone.startsWith("9")
+    /^[6-9]/.test(phone)
   ) {
 
     phone =
@@ -719,10 +664,6 @@ function sendWhatsApp(customer) {
 
   }
 
-
-  /*
-    WhatsApp message
-  */
 
   const message =
 `Hi ${customer.customerName || ""},
@@ -770,10 +711,6 @@ if (searchInput) {
           .toLowerCase();
 
 
-      /*
-        Show all records
-      */
-
       if (!searchTerm) {
 
         renderCustomers(
@@ -784,10 +721,6 @@ if (searchInput) {
 
       }
 
-
-      /*
-        Filter records
-      */
 
       const filteredCustomers =
         allCustomers.filter(
@@ -814,8 +747,9 @@ if (searchInput) {
               .toLowerCase();
 
 
-            return searchableText
-              .includes(searchTerm);
+            return searchableText.includes(
+              searchTerm
+            );
 
           }
         );
@@ -873,10 +807,12 @@ function updateCustomerCount(
 
 
 /* =========================
-   MONEY FORMAT
+   MONEY
 ========================= */
 
-function formatMoney(value) {
+function formatMoney(
+  value
+) {
 
   const number =
     Number(
@@ -899,15 +835,15 @@ function formatMoney(value) {
 
 
 /* =========================
-   DATE FORMAT
+   DATE
 ========================= */
 
-function formatDate(value) {
+function formatDate(
+  value
+) {
 
   if (!value) {
-
     return "-";
-
   }
 
 
