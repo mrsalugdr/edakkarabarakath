@@ -674,8 +674,8 @@ function sendWhatsApp(
 
 Reference Code: ${customer.referenceId || ""}
 
-Thank you,
-EDAkkara Barakath`;
+Thank you 😊,
+EDAKKARA BARAKATH`;
 
 
   const whatsappURL =
