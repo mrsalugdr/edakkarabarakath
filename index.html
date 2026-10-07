@@ -18,12 +18,9 @@
 
 <body>
 
-  <!-- =========================
-       HEADER
-  ========================== -->
+  <!-- HEADER -->
 
   <header class="topbar">
-
     <div class="container">
 
       <h1>EDAKKARA BARAKATH</h1>
@@ -33,33 +30,23 @@
       </p>
 
     </div>
-
   </header>
 
 
-  <!-- =========================
-       MAIN
-  ========================== -->
+  <!-- MAIN -->
 
   <main class="container">
 
-
-    <!-- =========================
-         PAGE HEADING
-    ========================== -->
+    <!-- PAGE HEADING -->
 
     <section class="heading">
 
       <div>
-
-        <h2>
-          Customer Management
-        </h2>
+        <h2>Customer Management</h2>
 
         <p>
           Manage stitching orders and customer records.
         </p>
-
       </div>
 
       <button
@@ -72,25 +59,19 @@
     </section>
 
 
-    <!-- =========================
-         NEW CUSTOMER
-    ========================== -->
+    <!-- NEW CUSTOMER -->
 
     <section class="card">
 
-      <h2>
-        New Customer
-      </h2>
+      <h2>New Customer</h2>
 
       <form id="customerForm">
 
         <div class="grid">
 
-
           <!-- CUSTOMER NAME -->
 
           <div>
-
             <label for="customerName">
               Customer Name *
             </label>
@@ -102,14 +83,12 @@
               required
               autocomplete="name"
             >
-
           </div>
 
 
           <!-- PHONE -->
 
           <div>
-
             <label for="phone">
               WhatsApp / Phone *
             </label>
@@ -120,15 +99,14 @@
               type="tel"
               required
               autocomplete="tel"
+              placeholder="Eg: 9747861631"
             >
-
           </div>
 
 
           <!-- PLACE -->
 
           <div>
-
             <label for="place">
               Place
             </label>
@@ -138,14 +116,12 @@
               name="place"
               type="text"
             >
-
           </div>
 
 
           <!-- RECEIVED DATE -->
 
           <div>
-
             <label for="receivedDate">
               Received Date *
             </label>
@@ -156,14 +132,12 @@
               type="date"
               required
             >
-
           </div>
 
 
           <!-- DELIVERY DATE -->
 
           <div>
-
             <label for="deliveryDate">
               Delivery Date
             </label>
@@ -173,14 +147,12 @@
               name="deliveryDate"
               type="date"
             >
-
           </div>
 
 
           <!-- ITEM -->
 
           <div>
-
             <label for="itemType">
               Dress / Item
             </label>
@@ -191,14 +163,12 @@
               type="text"
               placeholder="Eg: Blouse"
             >
-
           </div>
 
 
           <!-- QUANTITY -->
 
           <div>
-
             <label for="quantity">
               Quantity
             </label>
@@ -210,14 +180,12 @@
               min="1"
               value="1"
             >
-
           </div>
 
 
           <!-- STATUS -->
 
           <div>
-
             <label for="stitchingStatus">
               Stitching Status
             </label>
@@ -244,7 +212,6 @@
               </option>
 
             </select>
-
           </div>
 
 
@@ -260,12 +227,13 @@
               id="measurements"
               name="measurements"
               rows="4"
+              placeholder="Enter measurements..."
             ></textarea>
 
           </div>
 
 
-          <!-- SPECIAL NOTES -->
+          <!-- NOTES -->
 
           <div class="full">
 
@@ -277,6 +245,7 @@
               id="specialNotes"
               name="specialNotes"
               rows="4"
+              placeholder="Any special instructions..."
             ></textarea>
 
           </div>
@@ -296,6 +265,7 @@
               type="number"
               min="0"
               step="0.01"
+              placeholder="₹ 0"
             >
 
           </div>
@@ -315,6 +285,7 @@
               type="number"
               min="0"
               step="0.01"
+              placeholder="₹ 0"
             >
 
           </div>
@@ -322,7 +293,7 @@
         </div>
 
 
-        <!-- SAVE BUTTON -->
+        <!-- SAVE -->
 
         <button
           class="save"
@@ -341,9 +312,7 @@
     </section>
 
 
-    <!-- =========================
-         CUSTOMER RECORDS
-    ========================== -->
+    <!-- CUSTOMER RECORDS -->
 
     <section class="card">
 
@@ -375,25 +344,18 @@
       </div>
 
 
-      <!-- RECORDS TABLE -->
+      <!-- RECORDS -->
 
       <div id="recordsContainer">
-
         Loading customers...
-
       </div>
 
     </section>
 
-
   </main>
 
 
-  <!-- =========================
-       JAVASCRIPT
-       Version number forces
-       browser to load new JS
-  ========================== -->
+  <!-- JAVASCRIPT -->
 
   <script src="script.js?v=20261007"></script>
 
