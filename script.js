@@ -1,79 +1,135 @@
 const API_URL =
   "https://script.google.com/macros/s/AKfycbzHSlcGVg7EUUJdKf6PoPA0UhJCgbnd78lgy7bYRdGAzYplX7Pj8v8-fA2l4JFWxyGQ/exec";
 
-const form = document.getElementById("customerForm");
-const recordsContainer = document.getElementById("recordsContainer");
-const customerCount = document.getElementById("customerCount");
-const searchInput = document.getElementById("searchInput");
-const refreshBtn = document.getElementById("refreshBtn");
-const resultBox = document.getElementById("result");
+
+/* =========================
+   ELEMENTS
+========================= */
+
+const form =
+  document.getElementById("customerForm");
+
+const recordsContainer =
+  document.getElementById("recordsContainer");
+
+const customerCount =
+  document.getElementById("customerCount");
+
+const searchInput =
+  document.getElementById("searchInput");
+
+const refreshBtn =
+  document.getElementById("refreshBtn");
+
+const resultBox =
+  document.getElementById("result");
+
+
+/* =========================
+   DATA
+========================= */
 
 let allCustomers = [];
 
 
-/* =====================================================
+/* =========================
    LOAD CUSTOMERS
-===================================================== */
+========================= */
 
 async function loadCustomers() {
 
   if (recordsContainer) {
+
     recordsContainer.innerHTML =
       '<div class="loading">Loading customers...</div>';
+
   }
 
   try {
 
-    const response = await fetch(API_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "text/plain;charset=utf-8"
-      },
-      body: JSON.stringify({
-        action: "getCustomers"
-      })
-    });
+    const response =
+      await fetch(API_URL, {
+        method: "POST",
 
-    const result = await response.json();
+        headers: {
+          "Content-Type":
+            "text/plain;charset=utf-8"
+        },
+
+        body: JSON.stringify({
+          action: "getCustomers"
+        })
+      });
+
+
+    const result =
+      await response.json();
+
 
     if (!result.success) {
+
       throw new Error(
-        result.error || "Failed to load customers"
+        result.error ||
+        "Failed to load customers"
       );
+
     }
 
-    allCustomers = result.customers || [];
 
-    renderCustomers(allCustomers);
+    allCustomers =
+      result.customers || [];
+
+
+    renderCustomers(
+      allCustomers
+    );
+
 
   } catch (error) {
 
-    console.error("Load error:", error);
+    console.error(
+      "Load error:",
+      error
+    );
+
 
     if (recordsContainer) {
+
       recordsContainer.innerHTML = `
         <div class="error">
           Failed to load customers.
           <br>
-          <small>${escapeHTML(error.message)}</small>
+          <small>
+            ${escapeHTML(error.message)}
+          </small>
         </div>
       `;
+
     }
 
+
     updateCustomerCount(0);
+
   }
+
 }
 
 
-/* =====================================================
+/* =========================
    RENDER CUSTOMERS
-===================================================== */
+========================= */
 
 function renderCustomers(customers) {
 
-  if (!recordsContainer) return;
+  if (!recordsContainer) {
+    return;
+  }
 
-  updateCustomerCount(customers.length);
+
+  updateCustomerCount(
+    customers.length
+  );
+
 
   if (!customers.length) {
 
@@ -81,317 +137,576 @@ function renderCustomers(customers) {
       '<div class="empty">No customer records found.</div>';
 
     return;
+
   }
 
+
   let html = `
+
     <div class="tableWrapper">
 
       <table class="customerTable">
 
         <thead>
+
           <tr>
-            <th>Ref Code</th>
-            <th>Customer</th>
-            <th>Phone</th>
-            <th>Place</th>
-            <th>Item</th>
-            <th>Qty</th>
-            <th>Received</th>
-            <th>Delivery</th>
-            <th>Total</th>
-            <th>Balance</th>
-            <th>Status</th>
-            <th>WhatsApp</th>
+
+            <th>
+              Ref Code
+            </th>
+
+            <th>
+              Customer
+            </th>
+
+            <th>
+              Phone
+            </th>
+
+            <th>
+              Place
+            </th>
+
+            <th>
+              Item
+            </th>
+
+            <th>
+              Qty
+            </th>
+
+            <th>
+              Received
+            </th>
+
+            <th>
+              Delivery
+            </th>
+
+            <th>
+              Total
+            </th>
+
+            <th>
+              Balance
+            </th>
+
+            <th>
+              Status
+            </th>
+
+            <th>
+              WhatsApp
+            </th>
+
           </tr>
+
         </thead>
 
         <tbody>
+
   `;
 
 
-  customers.forEach(customer => {
+  customers.forEach(
+    (customer, index) => {
 
-    const status =
-      customer.stitchingStatus || "Received";
+      const status =
+        customer.stitchingStatus ||
+        "Received";
 
 
-    html += `
-      <tr>
+      html += `
 
-        <td>
-          <strong class="referenceCode">
-            ${escapeHTML(customer.referenceId || "")}
-          </strong>
-        </td>
+        <tr>
 
-        <td>
-          ${escapeHTML(customer.customerName || "")}
-        </td>
+          <td>
 
-        <td>
-          ${escapeHTML(customer.phone || "")}
-        </td>
+            <strong class="referenceCode">
 
-        <td>
-          ${escapeHTML(customer.place || "")}
-        </td>
+              ${escapeHTML(
+                customer.referenceId || ""
+              )}
 
-        <td>
-          ${escapeHTML(customer.itemType || "")}
-        </td>
+            </strong>
 
-        <td>
-          ${escapeHTML(customer.quantity || "")}
-        </td>
+          </td>
 
-        <td>
-          ${formatDate(customer.receivedDate)}
-        </td>
 
-        <td>
-          ${formatDate(customer.deliveryDate)}
-        </td>
+          <td>
 
-        <td>
-          ${formatMoney(customer.totalAmount)}
-        </td>
+            ${escapeHTML(
+              customer.customerName || ""
+            )}
 
-        <td>
-          <strong>
-            ${formatMoney(customer.balance)}
-          </strong>
-        </td>
+          </td>
 
-        <td>
-          <span class="status ${statusClass(status)}">
-            ${escapeHTML(status)}
-          </span>
-        </td>
 
-        <td>
-          <button
-            class="whatsappBtn"
-            type="button"
-            onclick='sendWhatsApp(${JSON.stringify(customer)})'
-          >
-            WhatsApp
-          </button>
-        </td>
+          <td>
 
-      </tr>
-    `;
+            ${escapeHTML(
+              customer.phone || ""
+            )}
 
-  });
+          </td>
+
+
+          <td>
+
+            ${escapeHTML(
+              customer.place || ""
+            )}
+
+          </td>
+
+
+          <td>
+
+            ${escapeHTML(
+              customer.itemType || ""
+            )}
+
+          </td>
+
+
+          <td>
+
+            ${escapeHTML(
+              customer.quantity || ""
+            )}
+
+          </td>
+
+
+          <td>
+
+            ${formatDate(
+              customer.receivedDate
+            )}
+
+          </td>
+
+
+          <td>
+
+            ${formatDate(
+              customer.deliveryDate
+            )}
+
+          </td>
+
+
+          <td>
+
+            ${formatMoney(
+              customer.totalAmount
+            )}
+
+          </td>
+
+
+          <td>
+
+            <strong>
+
+              ${formatMoney(
+                customer.balance
+              )}
+
+            </strong>
+
+          </td>
+
+
+          <td>
+
+            <span
+              class="status ${statusClass(status)}"
+            >
+
+              ${escapeHTML(status)}
+
+            </span>
+
+          </td>
+
+
+          <td>
+
+            <button
+              class="whatsappBtn"
+              type="button"
+              data-customer-index="${index}"
+            >
+              WhatsApp
+            </button>
+
+          </td>
+
+        </tr>
+
+      `;
+
+    }
+  );
 
 
   html += `
+
         </tbody>
 
       </table>
 
     </div>
+
   `;
 
 
-  recordsContainer.innerHTML = html;
+  recordsContainer.innerHTML =
+    html;
+
+
+  /*
+    WhatsApp buttons
+  */
+
+  const whatsappButtons =
+    recordsContainer.querySelectorAll(
+      ".whatsappBtn"
+    );
+
+
+  whatsappButtons.forEach(
+    button => {
+
+      button.addEventListener(
+        "click",
+        function () {
+
+          const index =
+            Number(
+              button.dataset.customerIndex
+            );
+
+
+          const customer =
+            customers[index];
+
+
+          if (customer) {
+
+            sendWhatsApp(
+              customer
+            );
+
+          }
+
+        }
+      );
+
+    }
+  );
+
 }
 
 
-/* =====================================================
+/* =========================
    SAVE CUSTOMER
-===================================================== */
+========================= */
 
 if (form) {
 
-  form.addEventListener("submit", async function (event) {
+  form.addEventListener(
+    "submit",
+    async function (event) {
 
-    event.preventDefault();
-
-
-    const submitButton =
-      form.querySelector('button[type="submit"]');
+      event.preventDefault();
 
 
-    if (submitButton) {
-
-      submitButton.disabled = true;
-
-      submitButton.textContent = "Saving...";
-
-    }
-
-
-    try {
-
-      const formData =
-        new FormData(form);
-
-
-      const data = {
-
-        action: "saveCustomer",
-
-        customerName:
-          formData.get("customerName") || "",
-
-        phone:
-          formData.get("phone") || "",
-
-        place:
-          formData.get("place") || "",
-
-        receivedDate:
-          formData.get("receivedDate") || "",
-
-        deliveryDate:
-          formData.get("deliveryDate") || "",
-
-        itemType:
-          formData.get("itemType") || "",
-
-        quantity:
-          formData.get("quantity") || "",
-
-        measurements:
-          formData.get("measurements") || "",
-
-        specialNotes:
-          formData.get("specialNotes") || "",
-
-        stitchingStatus:
-          formData.get("stitchingStatus") || "Received",
-
-        totalAmount:
-          formData.get("totalAmount") || 0,
-
-        advance:
-          formData.get("advance") || 0
-      };
-
-
-      const response = await fetch(API_URL, {
-
-        method: "POST",
-
-        headers: {
-          "Content-Type": "text/plain;charset=utf-8"
-        },
-
-        body: JSON.stringify(data)
-
-      });
-
-
-      const result =
-        await response.json();
-
-
-      if (!result.success) {
-
-        throw new Error(
-          result.error || "Failed to save customer"
+      const submitButton =
+        form.querySelector(
+          'button[type="submit"]'
         );
 
-      }
-
-
-      /* SUCCESS MESSAGE */
-
-      if (resultBox) {
-
-        resultBox.innerHTML = `
-          <div class="success">
-            Customer saved successfully!
-            <br>
-            <strong>
-              Reference Code: ${escapeHTML(result.referenceId || "")}
-            </strong>
-          </div>
-        `;
-
-      } else {
-
-        alert(
-          "Customer saved successfully!\n\n" +
-          "Reference Code: " +
-          result.referenceId
-        );
-
-      }
-
-
-      /* RESET FORM */
-
-      form.reset();
-
-
-      /* DEFAULT QUANTITY */
-
-      const quantityInput =
-        document.getElementById("quantity");
-
-      if (quantityInput) {
-        quantityInput.value = "1";
-      }
-
-
-      /* RELOAD RECORDS */
-
-      await loadCustomers();
-
-
-    } catch (error) {
-
-      console.error("Save error:", error);
-
-
-      if (resultBox) {
-
-        resultBox.innerHTML = `
-          <div class="error">
-            Failed to save customer.
-            <br>
-            <small>${escapeHTML(error.message)}</small>
-          </div>
-        `;
-
-      } else {
-
-        alert(
-          "Failed to save customer.\n\n" +
-          error.message
-        );
-
-      }
-
-
-    } finally {
 
       if (submitButton) {
 
-        submitButton.disabled = false;
+        submitButton.disabled =
+          true;
 
         submitButton.textContent =
-          "Save Customer";
+          "Saving...";
+
+      }
+
+
+      try {
+
+        const formData =
+          new FormData(form);
+
+
+        const data = {
+
+          action:
+            "saveCustomer",
+
+
+          customerName:
+            formData.get(
+              "customerName"
+            ) || "",
+
+
+          phone:
+            formData.get(
+              "phone"
+            ) || "",
+
+
+          place:
+            formData.get(
+              "place"
+            ) || "",
+
+
+          receivedDate:
+            formData.get(
+              "receivedDate"
+            ) || "",
+
+
+          deliveryDate:
+            formData.get(
+              "deliveryDate"
+            ) || "",
+
+
+          itemType:
+            formData.get(
+              "itemType"
+            ) || "",
+
+
+          quantity:
+            formData.get(
+              "quantity"
+            ) || "",
+
+
+          measurements:
+            formData.get(
+              "measurements"
+            ) || "",
+
+
+          specialNotes:
+            formData.get(
+              "specialNotes"
+            ) || "",
+
+
+          stitchingStatus:
+            formData.get(
+              "stitchingStatus"
+            ) || "Received",
+
+
+          totalAmount:
+            formData.get(
+              "totalAmount"
+            ) || 0,
+
+
+          advance:
+            formData.get(
+              "advance"
+            ) || 0
+
+        };
+
+
+        const response =
+          await fetch(API_URL, {
+
+            method: "POST",
+
+            headers: {
+              "Content-Type":
+                "text/plain;charset=utf-8"
+            },
+
+            body:
+              JSON.stringify(data)
+
+          });
+
+
+        const result =
+          await response.json();
+
+
+        if (!result.success) {
+
+          throw new Error(
+            result.error ||
+            "Failed to save customer"
+          );
+
+        }
+
+
+        if (resultBox) {
+
+          resultBox.innerHTML = `
+
+            <div class="success">
+
+              Customer saved successfully!
+
+              <br>
+
+              <strong>
+                Reference Code:
+                ${escapeHTML(
+                  result.referenceId || ""
+                )}
+              </strong>
+
+            </div>
+
+          `;
+
+        } else {
+
+          alert(
+            "Customer saved successfully!\n\n" +
+            "Reference Code: " +
+            result.referenceId
+          );
+
+        }
+
+
+        /*
+          Reset form
+        */
+
+        form.reset();
+
+
+        const quantityInput =
+          document.getElementById(
+            "quantity"
+          );
+
+
+        if (quantityInput) {
+
+          quantityInput.value =
+            "1";
+
+        }
+
+
+        /*
+          Reload records
+        */
+
+        await loadCustomers();
+
+
+      } catch (error) {
+
+        console.error(
+          "Save error:",
+          error
+        );
+
+
+        if (resultBox) {
+
+          resultBox.innerHTML = `
+
+            <div class="error">
+
+              Failed to save customer.
+
+              <br>
+
+              <small>
+                ${escapeHTML(
+                  error.message
+                )}
+              </small>
+
+            </div>
+
+          `;
+
+        } else {
+
+          alert(
+            "Failed to save customer.\n\n" +
+            error.message
+          );
+
+        }
+
+
+      } finally {
+
+        if (submitButton) {
+
+          submitButton.disabled =
+            false;
+
+          submitButton.textContent =
+            "Save Customer";
+
+        }
 
       }
 
     }
-
-  });
+  );
 
 }
 
 
-/* =====================================================
+/* =========================
    WHATSAPP
-===================================================== */
+========================= */
 
 function sendWhatsApp(customer) {
 
-  const phone =
-    String(customer.phone || "")
-      .replace(/\D/g, "");
+  let phone =
+    String(
+      customer.phone || ""
+    )
+    .replace(/\D/g, "");
+
+
+  /*
+    If Indian number is entered
+    without +91, automatically add 91.
+  */
+
+  if (
+    phone.length === 10 &&
+    phone.startsWith("6") ||
+    phone.length === 10 &&
+    phone.startsWith("7") ||
+    phone.length === 10 &&
+    phone.startsWith("8") ||
+    phone.length === 10 &&
+    phone.startsWith("9")
+  ) {
+
+    phone =
+      "91" + phone;
+
+  }
 
 
   if (!phone) {
@@ -401,11 +716,12 @@ function sendWhatsApp(customer) {
     );
 
     return;
+
   }
 
 
   /*
-    FINAL WHATSAPP MESSAGE
+    WhatsApp message
   */
 
   const message =
@@ -425,19 +741,22 @@ EDAkkara Barakath`;
     "https://wa.me/" +
     phone +
     "?text=" +
-    encodeURIComponent(message);
+    encodeURIComponent(
+      message
+    );
 
 
   window.open(
     whatsappURL,
     "_blank"
   );
+
 }
 
 
-/* =====================================================
+/* =========================
    SEARCH
-===================================================== */
+========================= */
 
 if (searchInput) {
 
@@ -451,6 +770,10 @@ if (searchInput) {
           .toLowerCase();
 
 
+      /*
+        Show all records
+      */
+
       if (!searchTerm) {
 
         renderCustomers(
@@ -458,8 +781,13 @@ if (searchInput) {
         );
 
         return;
+
       }
 
+
+      /*
+        Filter records
+      */
 
       const filteredCustomers =
         allCustomers.filter(
@@ -503,9 +831,9 @@ if (searchInput) {
 }
 
 
-/* =====================================================
+/* =========================
    REFRESH
-===================================================== */
+========================= */
 
 if (refreshBtn) {
 
@@ -521,28 +849,39 @@ if (refreshBtn) {
 }
 
 
-/* =====================================================
+/* =========================
    CUSTOMER COUNT
-===================================================== */
+========================= */
 
-function updateCustomerCount(count) {
+function updateCustomerCount(
+  count
+) {
 
-  if (!customerCount) return;
+  if (!customerCount) {
+    return;
+  }
+
 
   customerCount.textContent =
-    `${count} customer${count === 1 ? "" : "s"}`;
+    `${count} customer${
+      count === 1
+        ? ""
+        : "s"
+    }`;
 
 }
 
 
-/* =====================================================
-   FORMAT MONEY
-===================================================== */
+/* =========================
+   MONEY FORMAT
+========================= */
 
 function formatMoney(value) {
 
   const number =
-    Number(value || 0);
+    Number(
+      value || 0
+    );
 
 
   return (
@@ -559,14 +898,16 @@ function formatMoney(value) {
 }
 
 
-/* =====================================================
-   FORMAT DATE
-===================================================== */
+/* =========================
+   DATE FORMAT
+========================= */
 
 function formatDate(value) {
 
   if (!value) {
+
     return "-";
+
   }
 
 
@@ -574,7 +915,11 @@ function formatDate(value) {
     new Date(value);
 
 
-  if (isNaN(date.getTime())) {
+  if (
+    isNaN(
+      date.getTime()
+    )
+  ) {
 
     return escapeHTML(
       String(value)
@@ -595,16 +940,20 @@ function formatDate(value) {
 }
 
 
-/* =====================================================
+/* =========================
    STATUS CLASS
-===================================================== */
+========================= */
 
-function statusClass(status) {
+function statusClass(
+  status
+) {
 
   const value =
-    String(status || "")
-      .toLowerCase()
-      .trim();
+    String(
+      status || ""
+    )
+    .toLowerCase()
+    .trim();
 
 
   if (
@@ -643,13 +992,17 @@ function statusClass(status) {
 }
 
 
-/* =====================================================
-   ESCAPE HTML
-===================================================== */
+/* =========================
+   HTML ESCAPE
+========================= */
 
-function escapeHTML(value) {
+function escapeHTML(
+  value
+) {
 
-  return String(value ?? "")
+  return String(
+    value ?? ""
+  )
 
     .replace(
       /&/g,
@@ -679,9 +1032,9 @@ function escapeHTML(value) {
 }
 
 
-/* =====================================================
-   INITIAL LOAD
-===================================================== */
+/* =========================
+   START
+========================= */
 
 document.addEventListener(
   "DOMContentLoaded",
