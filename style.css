@@ -15,7 +15,10 @@ body {
   color: #1f2937;
 }
 
-/* HEADER */
+
+/* =========================
+   HEADER
+========================= */
 
 .topbar {
   width: 100%;
@@ -37,7 +40,10 @@ body {
   font-size: 13px;
 }
 
-/* MAIN */
+
+/* =========================
+   MAIN
+========================= */
 
 .container {
   width: 94%;
@@ -45,7 +51,10 @@ body {
   margin: 24px auto 50px;
 }
 
-/* PAGE HEADING */
+
+/* =========================
+   PAGE HEADING
+========================= */
 
 .heading {
   display: flex;
@@ -66,7 +75,10 @@ body {
   color: #6b7280;
 }
 
-/* CARD */
+
+/* =========================
+   CARD
+========================= */
 
 .card {
   background: #ffffff;
@@ -74,7 +86,7 @@ body {
   border-radius: 14px;
   padding: 24px;
   margin-bottom: 22px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
 }
 
 .card h2 {
@@ -83,7 +95,10 @@ body {
   font-size: 20px;
 }
 
-/* FORM */
+
+/* =========================
+   FORM
+========================= */
 
 #customerForm {
   margin: 0;
@@ -106,7 +121,10 @@ body {
   grid-column: 1 / -1;
 }
 
-/* LABELS */
+
+/* =========================
+   LABELS
+========================= */
 
 label {
   display: block;
@@ -116,7 +134,10 @@ label {
   font-weight: 600;
 }
 
-/* INPUTS */
+
+/* =========================
+   INPUTS
+========================= */
 
 input,
 select,
@@ -125,7 +146,7 @@ textarea {
   padding: 10px 12px;
   border: 1px solid #d1d5db;
   border-radius: 8px;
-  background: #fff;
+  background: #ffffff;
   color: #111827;
   font-family: inherit;
   font-size: 14px;
@@ -146,14 +167,22 @@ input:focus,
 select:focus,
 textarea:focus {
   border-color: #111827;
-  box-shadow: 0 0 0 3px rgba(17,24,39,0.07);
+  box-shadow: 0 0 0 3px rgba(17, 24, 39, 0.07);
 }
 
-/* BUTTONS */
+
+/* =========================
+   BUTTONS
+========================= */
 
 button {
   font-family: inherit;
   cursor: pointer;
+}
+
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 #refreshBtn {
@@ -167,7 +196,7 @@ button {
 }
 
 #refreshBtn:hover {
-  background: #000;
+  background: #000000;
 }
 
 .save {
@@ -183,16 +212,40 @@ button {
 }
 
 .save:hover {
-  background: #000;
+  background: #000000;
 }
 
-/* RESULT */
+
+/* =========================
+   RESULT
+========================= */
 
 #result {
   margin-top: 15px;
 }
 
-/* RECORD HEADER */
+.success {
+  padding: 12px 14px;
+  border-radius: 8px;
+  background: #dcfce7;
+  border: 1px solid #bbf7d0;
+  color: #166534;
+  font-size: 13px;
+}
+
+.error {
+  padding: 12px 14px;
+  border-radius: 8px;
+  background: #fee2e2;
+  border: 1px solid #fecaca;
+  color: #991b1b;
+  font-size: 13px;
+}
+
+
+/* =========================
+   RECORD HEADER
+========================= */
 
 .recordsHead {
   display: flex;
@@ -218,29 +271,33 @@ button {
   margin: 0;
 }
 
-/* RECORD TABLE */
+
+/* =========================
+   RECORD TABLE
+========================= */
 
 #recordsContainer {
   width: 100%;
   overflow: hidden;
   border: 1px solid #e5e7eb;
   border-radius: 10px;
+  background: #ffffff;
 }
 
-.records-table-wrapper {
+.tableWrapper {
   width: 100%;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
 }
 
-.records-table {
+.customerTable {
   width: 100%;
   min-width: 1200px;
   border-collapse: collapse;
-  background: white;
+  background: #ffffff;
 }
 
-.records-table th {
+.customerTable th {
   padding: 13px 12px;
   background: #f3f4f6;
   border-bottom: 1px solid #d1d5db;
@@ -251,7 +308,7 @@ button {
   white-space: nowrap;
 }
 
-.records-table td {
+.customerTable td {
   padding: 13px 12px;
   border-bottom: 1px solid #edf0f2;
   color: #374151;
@@ -259,15 +316,28 @@ button {
   white-space: nowrap;
 }
 
-.records-table tbody tr:hover {
+.customerTable tbody tr:hover {
   background: #fafafa;
 }
 
-.records-table tbody tr:last-child td {
+.customerTable tbody tr:last-child td {
   border-bottom: 0;
 }
 
-/* STATUS */
+
+/* =========================
+   REFERENCE CODE
+========================= */
+
+.referenceCode {
+  color: #111827;
+  font-weight: 700;
+}
+
+
+/* =========================
+   STATUS
+========================= */
 
 .status {
   display: inline-block;
@@ -277,54 +347,63 @@ button {
   font-weight: 700;
 }
 
-.status.in-progress {
-  background: #fef3c7;
-  color: #92400e;
-}
-
-.status.received {
-  background: #e5e7eb;
-  color: #374151;
-}
-
-.status.ready {
+.statusComplete {
   background: #dcfce7;
   color: #166534;
 }
 
-.status.delivered {
-  background: #dbeafe;
-  color: #1e40af;
+.statusProgress {
+  background: #fef3c7;
+  color: #92400e;
 }
 
-/* WHATSAPP */
+.statusPending {
+  background: #e5e7eb;
+  color: #374151;
+}
 
-.whatsapp-btn {
+.statusDefault {
+  background: #e5e7eb;
+  color: #374151;
+}
+
+
+/* =========================
+   WHATSAPP
+========================= */
+
+.whatsappBtn {
   display: inline-block;
   padding: 7px 13px;
+  border: 0;
   border-radius: 7px;
   background: #16a34a;
-  color: white;
-  text-decoration: none;
+  color: #ffffff;
   font-size: 12px;
   font-weight: 700;
+  cursor: pointer;
 }
 
-.whatsapp-btn:hover {
+.whatsappBtn:hover {
   background: #15803d;
 }
 
-/* LOADING */
+
+/* =========================
+   LOADING
+========================= */
 
 .loading,
-.empty,
-.error {
+.empty {
   padding: 35px;
   text-align: center;
   color: #6b7280;
 }
 
-/* MOBILE */
+
+/* =========================
+   MOBILE
+========================= */
 
 @media (max-width: 700px) {
 
@@ -334,6 +413,10 @@ button {
 
   .topbar h1 {
     font-size: 22px;
+  }
+
+  .topbar p {
+    font-size: 12px;
   }
 
   .container {
@@ -379,16 +462,26 @@ button {
     width: 100%;
   }
 
-  /* Table stays horizontal and can be swiped */
   #recordsContainer {
     overflow: hidden;
   }
 
-  .records-table-wrapper {
+  .tableWrapper {
     overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
   }
 
-  .records-table {
+  .customerTable {
     min-width: 1200px;
+  }
+
+  .customerTable th,
+  .customerTable td {
+    padding: 11px 10px;
+    font-size: 12px;
+  }
+
+  .whatsappBtn {
+    padding: 7px 11px;
   }
 }
