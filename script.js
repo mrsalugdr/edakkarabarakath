@@ -6,20 +6,24 @@ const recordsContainer = document.getElementById("recordsContainer");
 const customerCount = document.getElementById("customerCount");
 const searchInput = document.getElementById("searchInput");
 const refreshBtn = document.getElementById("refreshBtn");
+const resultBox = document.getElementById("result");
 
 let allCustomers = [];
 
-/* =========================
+
+/* =====================================================
    LOAD CUSTOMERS
-========================= */
+===================================================== */
 
 async function loadCustomers() {
+
   if (recordsContainer) {
     recordsContainer.innerHTML =
       '<div class="loading">Loading customers...</div>';
   }
 
   try {
+
     const response = await fetch(API_URL, {
       method: "POST",
       headers: {
@@ -33,7 +37,9 @@ async function loadCustomers() {
     const result = await response.json();
 
     if (!result.success) {
-      throw new Error(result.error || "Failed to load customers");
+      throw new Error(
+        result.error || "Failed to load customers"
+      );
     }
 
     allCustomers = result.customers || [];
@@ -41,6 +47,7 @@ async function loadCustomers() {
     renderCustomers(allCustomers);
 
   } catch (error) {
+
     console.error("Load error:", error);
 
     if (recordsContainer) {
@@ -52,29 +59,35 @@ async function loadCustomers() {
         </div>
       `;
     }
+
+    updateCustomerCount(0);
   }
 }
 
-/* =========================
+
+/* =====================================================
    RENDER CUSTOMERS
-========================= */
+===================================================== */
 
 function renderCustomers(customers) {
+
   if (!recordsContainer) return;
-
-  if (!customers.length) {
-    recordsContainer.innerHTML =
-      '<div class="empty">No customer records found.</div>';
-
-    updateCustomerCount(0);
-    return;
-  }
 
   updateCustomerCount(customers.length);
 
+  if (!customers.length) {
+
+    recordsContainer.innerHTML =
+      '<div class="empty">No customer records found.</div>';
+
+    return;
+  }
+
   let html = `
     <div class="tableWrapper">
+
       <table class="customerTable">
+
         <thead>
           <tr>
             <th>Ref Code</th>
@@ -91,11 +104,16 @@ function renderCustomers(customers) {
             <th>WhatsApp</th>
           </tr>
         </thead>
+
         <tbody>
   `;
 
+
   customers.forEach(customer => {
-    const status = customer.stitchingStatus || "Received";
+
+    const status =
+      customer.stitchingStatus || "Received";
+
 
     html += `
       <tr>
@@ -153,8 +171,8 @@ function renderCustomers(customers) {
         <td>
           <button
             class="whatsappBtn"
-            onclick='sendWhatsApp(${JSON.stringify(customer)})'
             type="button"
+            onclick='sendWhatsApp(${JSON.stringify(customer)})'
           >
             WhatsApp
           </button>
@@ -162,37 +180,55 @@ function renderCustomers(customers) {
 
       </tr>
     `;
+
   });
+
 
   html += `
         </tbody>
+
       </table>
+
     </div>
   `;
+
 
   recordsContainer.innerHTML = html;
 }
 
-/* =========================
+
+/* =====================================================
    SAVE CUSTOMER
-========================= */
+===================================================== */
 
 if (form) {
+
   form.addEventListener("submit", async function (event) {
+
     event.preventDefault();
+
 
     const submitButton =
       form.querySelector('button[type="submit"]');
 
+
     if (submitButton) {
+
       submitButton.disabled = true;
+
       submitButton.textContent = "Saving...";
+
     }
 
+
     try {
-      const formData = new FormData(form);
+
+      const formData =
+        new FormData(form);
+
 
       const data = {
+
         action: "saveCustomer",
 
         customerName:
@@ -232,62 +268,144 @@ if (form) {
           formData.get("advance") || 0
       };
 
+
       const response = await fetch(API_URL, {
+
         method: "POST",
+
         headers: {
           "Content-Type": "text/plain;charset=utf-8"
         },
+
         body: JSON.stringify(data)
+
       });
 
-      const result = await response.json();
+
+      const result =
+        await response.json();
+
 
       if (!result.success) {
-        throw new Error(result.error || "Failed to save customer");
+
+        throw new Error(
+          result.error || "Failed to save customer"
+        );
+
       }
 
-      alert(
-        "Customer saved successfully!\n\nReference Code: " +
-        result.referenceId
-      );
+
+      /* SUCCESS MESSAGE */
+
+      if (resultBox) {
+
+        resultBox.innerHTML = `
+          <div class="success">
+            Customer saved successfully!
+            <br>
+            <strong>
+              Reference Code: ${escapeHTML(result.referenceId || "")}
+            </strong>
+          </div>
+        `;
+
+      } else {
+
+        alert(
+          "Customer saved successfully!\n\n" +
+          "Reference Code: " +
+          result.referenceId
+        );
+
+      }
+
+
+      /* RESET FORM */
 
       form.reset();
 
+
+      /* DEFAULT QUANTITY */
+
+      const quantityInput =
+        document.getElementById("quantity");
+
+      if (quantityInput) {
+        quantityInput.value = "1";
+      }
+
+
+      /* RELOAD RECORDS */
+
       await loadCustomers();
 
+
     } catch (error) {
+
       console.error("Save error:", error);
 
-      alert(
-        "Failed to save customer.\n\n" +
-        error.message
-      );
+
+      if (resultBox) {
+
+        resultBox.innerHTML = `
+          <div class="error">
+            Failed to save customer.
+            <br>
+            <small>${escapeHTML(error.message)}</small>
+          </div>
+        `;
+
+      } else {
+
+        alert(
+          "Failed to save customer.\n\n" +
+          error.message
+        );
+
+      }
+
 
     } finally {
+
       if (submitButton) {
+
         submitButton.disabled = false;
-        submitButton.textContent = "Save Customer";
+
+        submitButton.textContent =
+          "Save Customer";
+
       }
+
     }
+
   });
+
 }
 
-/* =========================
+
+/* =====================================================
    WHATSAPP
-========================= */
+===================================================== */
 
 function sendWhatsApp(customer) {
 
-  const phone = String(customer.phone || "")
-    .replace(/\D/g, "");
+  const phone =
+    String(customer.phone || "")
+      .replace(/\D/g, "");
+
 
   if (!phone) {
-    alert("Customer phone number not available.");
+
+    alert(
+      "Customer phone number not available."
+    );
+
     return;
   }
 
+
   /*
-    WhatsApp message
+    FINAL WHATSAPP MESSAGE
   */
 
   const message =
@@ -295,12 +413,13 @@ function sendWhatsApp(customer) {
 
 *എടക്കര ബറക്കാത്തിൽ നിന്നും*
 
-നിങ്ങളുടെ stitching order ready ആണ്.
+നിങ്ങളുടെ ${customer.itemType || ""} സ്റ്റിച്ച് ചെയ്തു വച്ചിട്ടുണ്ട്.
 
 Reference Code: ${customer.referenceId || ""}
 
 Thank you,
 EDAkkara Barakath`;
+
 
   const whatsappURL =
     "https://wa.me/" +
@@ -308,107 +427,177 @@ EDAkkara Barakath`;
     "?text=" +
     encodeURIComponent(message);
 
-  window.open(whatsappURL, "_blank");
-}
 
-/* =========================
-   SEARCH
-========================= */
-
-if (searchInput) {
-  searchInput.addEventListener("input", function () {
-
-    const searchTerm =
-      searchInput.value.trim().toLowerCase();
-
-    if (!searchTerm) {
-      renderCustomers(allCustomers);
-      return;
-    }
-
-    const filteredCustomers =
-      allCustomers.filter(customer => {
-
-        const searchableText = [
-          customer.referenceId,
-          customer.customerName,
-          customer.phone,
-          customer.place,
-          customer.itemType,
-          customer.quantity,
-          customer.stitchingStatus
-        ]
-          .join(" ")
-          .toLowerCase();
-
-        return searchableText.includes(searchTerm);
-      });
-
-    renderCustomers(filteredCustomers);
-  });
-}
-
-/* =========================
-   REFRESH
-========================= */
-
-if (refreshBtn) {
-  refreshBtn.addEventListener("click", function () {
-    loadCustomers();
-  });
-}
-
-/* =========================
-   CUSTOMER COUNT
-========================= */
-
-function updateCustomerCount(count) {
-  if (!customerCount) return;
-
-  customerCount.textContent = count;
-}
-
-/* =========================
-   FORMAT MONEY
-========================= */
-
-function formatMoney(value) {
-
-  const number = Number(value || 0);
-
-  return (
-    "₹" +
-    number.toLocaleString("en-IN", {
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 2
-    })
+  window.open(
+    whatsappURL,
+    "_blank"
   );
 }
 
-/* =========================
+
+/* =====================================================
+   SEARCH
+===================================================== */
+
+if (searchInput) {
+
+  searchInput.addEventListener(
+    "input",
+    function () {
+
+      const searchTerm =
+        searchInput.value
+          .trim()
+          .toLowerCase();
+
+
+      if (!searchTerm) {
+
+        renderCustomers(
+          allCustomers
+        );
+
+        return;
+      }
+
+
+      const filteredCustomers =
+        allCustomers.filter(
+          customer => {
+
+            const searchableText = [
+
+              customer.referenceId,
+
+              customer.customerName,
+
+              customer.phone,
+
+              customer.place,
+
+              customer.itemType,
+
+              customer.quantity,
+
+              customer.stitchingStatus
+
+            ]
+              .join(" ")
+              .toLowerCase();
+
+
+            return searchableText
+              .includes(searchTerm);
+
+          }
+        );
+
+
+      renderCustomers(
+        filteredCustomers
+      );
+
+    }
+  );
+
+}
+
+
+/* =====================================================
+   REFRESH
+===================================================== */
+
+if (refreshBtn) {
+
+  refreshBtn.addEventListener(
+    "click",
+    function () {
+
+      loadCustomers();
+
+    }
+  );
+
+}
+
+
+/* =====================================================
+   CUSTOMER COUNT
+===================================================== */
+
+function updateCustomerCount(count) {
+
+  if (!customerCount) return;
+
+  customerCount.textContent =
+    `${count} customer${count === 1 ? "" : "s"}`;
+
+}
+
+
+/* =====================================================
+   FORMAT MONEY
+===================================================== */
+
+function formatMoney(value) {
+
+  const number =
+    Number(value || 0);
+
+
+  return (
+    "₹" +
+    number.toLocaleString(
+      "en-IN",
+      {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 2
+      }
+    )
+  );
+
+}
+
+
+/* =====================================================
    FORMAT DATE
-========================= */
+===================================================== */
 
 function formatDate(value) {
 
-  if (!value) return "-";
-
-  const date = new Date(value);
-
-  if (isNaN(date.getTime())) {
-    return escapeHTML(String(value));
+  if (!value) {
+    return "-";
   }
 
-  return date.toLocaleDateString("en-IN", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric"
-  });
+
+  const date =
+    new Date(value);
+
+
+  if (isNaN(date.getTime())) {
+
+    return escapeHTML(
+      String(value)
+    );
+
+  }
+
+
+  return date.toLocaleDateString(
+    "en-IN",
+    {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric"
+    }
+  );
+
 }
 
-/* =========================
+
+/* =====================================================
    STATUS CLASS
-========================= */
+===================================================== */
 
 function statusClass(status) {
 
@@ -417,49 +606,88 @@ function statusClass(status) {
       .toLowerCase()
       .trim();
 
+
   if (
     value.includes("complete") ||
     value.includes("ready") ||
     value.includes("delivered")
   ) {
+
     return "statusComplete";
+
   }
+
 
   if (
     value.includes("progress") ||
     value.includes("stitch")
   ) {
+
     return "statusProgress";
+
   }
+
 
   if (
     value.includes("pending") ||
     value.includes("received")
   ) {
+
     return "statusPending";
+
   }
 
+
   return "statusDefault";
+
 }
 
-/* =========================
+
+/* =====================================================
    ESCAPE HTML
-========================= */
+===================================================== */
 
 function escapeHTML(value) {
 
   return String(value ?? "")
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;");
+
+    .replace(
+      /&/g,
+      "&amp;"
+    )
+
+    .replace(
+      /</g,
+      "&lt;"
+    )
+
+    .replace(
+      />/g,
+      "&gt;"
+    )
+
+    .replace(
+      /"/g,
+      "&quot;"
+    )
+
+    .replace(
+      /'/g,
+      "&#039;"
+    );
+
 }
 
-/* =========================
-   INITIAL LOAD
-========================= */
 
-document.addEventListener("DOMContentLoaded", function () {
-  loadCustomers();
-});
+/* =====================================================
+   INITIAL LOAD
+===================================================== */
+
+document.addEventListener(
+  "DOMContentLoaded",
+  function () {
+
+    loadCustomers();
+
+  }
+);
